@@ -1,45 +1,41 @@
 import random
 import math
+import collections
 
 
 def roud_well(n):
     if n-math.floor(n)<0.5:
         return math.floor(n)
     return math.ceil(n)
-s=0
-d=0
-for _ in range(100):
-    t= random.random()
-    k=math.log(t,math.e)/(-1/3)
-    s+= roud_well(k)
-    d+=k
 
 class Person:
-    def __init__(self,sex=None):
+    def __init__(self,sex=None,age=None):
         # 0 is male, 1 es female
         self.sex= sex if not sex is None else (0 if random.random()<0.5 else 1)
         # age is in months
-        self.age= random.randint(0,100*12)
+        self.age=age if not age is None else random.randint(0,100*12)
         self.death_time= self.cal_death_time(self.age,self.sex)
         # want to be in a couple
         self.wtbiac=self.c_wtbiac(self.age)
-        # one more kid?
-        self.omk=True
-        # number of kids
+        self.number_of_kids_wanted=0
         self.number_of_kids=0
         # is the person single
         self.single=True
         # time to wait after breking up
         self.mourning=0
+        while self.one_more_kid():
+            pass
         
     def one_more_kid(self):
-        if self.omk == False:
-            return False
         prob=[0.6,0.75,0.35,0.2,0.1]
-        if random.random()<prob[self.number_of_kids]:
-            self.number_of_kids+=1
-            return True
-        self.omk=False
+        if self.number_of_kids_wanted<5:
+            if random.random()<prob[self.number_of_kids_wanted]:
+                self.number_of_kids_wanted+=1
+                return True
+        else:
+             if random.random()<0.05:
+                self.number_of_kids_wanted+=1
+                return True
         return False
 
     @staticmethod
@@ -62,6 +58,9 @@ class Person:
         
     def is_dead(self):
         return self.death_time==self.age
+    # if you want another kid 
+    def want_kid(self):
+        return self.number_of_kids<self.number_of_kids_wanted
     @staticmethod
     def cal_death_time(age,sex):
         prob=[0]*5
@@ -111,11 +110,12 @@ class Population:
         self.men=[Person(0) for _ in range(m)]
         self.women=[Person(1) for _ in range(f)]
         self.time=years*12
-        #couples to break
+        # couples to break
         self.couples=[]
-        #number of couples
+        # number of couples
         self.noc=0
-
+        # kids to be born
+        self.kids=collections.deque()
 
     def remove_dead_people(self):
         i=0
@@ -142,10 +142,14 @@ class Population:
             self.remove_dead_people()
             for i in self.couples:
                 i[2]-=1
+            for i in self.kids:
+                i[0]-=1
+            self.give_birth()
+            self.make_kids()
             self.remove_couples()
             self.make_couples()
             if count%12==0:
-                print(len(self.men),len(self.women),len(self.couples),self.noc)
+                print(len(self.men),len(self.women),len(self.couples),self.noc,len(self.kids))
             count+=1
             self.time-=1
 
@@ -170,9 +174,9 @@ class Population:
             t2=aw.death_time-aw.age
             if pb<0.2:
                 t3=random.randint(1,max(min(t1,t2)-1,1))
-                self.couples.append([am,aw,t3])
+                self.couples.append([am,aw,t3,0])
             else:
-                self.couples.append([am,aw,min(t1,t2)])
+                self.couples.append([am,aw,min(t1,t2),0])
             aw.single=False
             am.single=False
             return True
@@ -204,23 +208,62 @@ class Population:
                         else:
                             continue
                     self.add_couple(am,aw,0.15)
-               
-                       
-a=Population(1000,1000,126)
+
+    def number_of_kids(self):
+        table=[0.68,0.86,0.94,0.98,1]
+        ct=random.random()
+        for i in range(len(table)):
+            if ct<table[i]:
+                return i+1 
+
+    def make_kids(self):
+        
+        for cp in self.couples:
+            if cp[3]==0 and (cp[0].want_kid() or cp[1].want_kid()):
+                p=random.random()
+                if 12*12<=cp[1].age and cp[1].age<15*12 and cp[1].death_time-cp[1].age>9:
+                    if p<0.2:
+                        cp[0].number_of_kids+=1
+                        cp[1].number_of_kids+=1
+                        self.kids.append([9,self.number_of_kids()])
+                    continue
+                if  cp[1].age<21*12 and cp[1].death_time-cp[1].age>9:
+                    if p<0.45:
+                        cp[0].number_of_kids+=1
+                        cp[1].number_of_kids+=1
+                        self.kids.append([9,self.number_of_kids()])
+                    continue
+                if cp[1].age<35*12 and cp[1].death_time-cp[1].age>9:
+                    if p<0.8:
+                        cp[0].number_of_kids+=1
+                        cp[1].number_of_kids+=1
+                        self.kids.append([9,self.number_of_kids()])
+
+                if cp[1].age<45*12 and cp[1].death_time-cp[1].age>9:
+                    if p<0.4:
+                        cp[0].number_of_kids+=1
+                        cp[1].number_of_kids+=1
+                        self.kids.append([9,self.number_of_kids()])
+                    continue                
+                if cp[1].age<60*12 and cp[1].death_time-cp[1].age>9:
+                    if p<0.2:
+                        cp[0].number_of_kids+=1
+                        cp[1].number_of_kids+=1
+                        self.kids.append([9,self.number_of_kids()])
+                    continue    
+                if  cp[1].age<125*12 and cp[1].death_time-cp[1].age>9:
+                    if p<0.05:
+                        cp[0].number_of_kids+=1
+                        cp[1].number_of_kids+=1
+                        self.kids.append([9,self.number_of_kids()])
+    def give_birth(self):
+        ac=0
+        while len(self.kids)!=0 and self.kids[0][0]==0:
+            ac+=self.kids[0][1]
+            self.kids.popleft()
+        news=[Person(age=0) for _ in range(ac) ]
+        self.men.extend([x for x in news if x.sex==0])
+        self.women.extend([x for x in news if x.sex==1])
+
+a=Population(200,500,200)
 a.run()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
