@@ -1,0 +1,188 @@
+\documentclass[]{article}
+\usepackage{amsmath, amsthm, amsfonts}
+\usepackage{graphics}
+\usepackage{float}
+\usepackage{epsfig}
+\usepackage{amssymb}
+\usepackage{dsfont}
+\usepackage{latexsym}
+\usepackage{newlfont}
+\usepackage{epstopdf}
+\usepackage{amsthm}
+\usepackage{epsfig}
+\usepackage{caption}
+\usepackage{multirow}
+\usepackage[pdftex,breaklinks,colorlinks,linkcolor=black,citecolor=blue,urlcolor=blue]{hyperref}
+\usepackage[x11names,table]{xcolor}
+\usepackage{graphics}
+\usepackage{wrapfig}
+\usepackage[rflt]{floatflt}
+\usepackage{multicol}
+\usepackage{listings} \lstset {language = C++, basicstyle=\bfseries\ttfamily, keywordstyle = \color{blue}, commentstyle = \bf\color{green}}
+\usepackage{tikz}
+\usepackage{enumitem}
+
+\newcommand
+*
+{\itembolasazules}[1]{% bolas 3D
+	\footnotesize\protect\tikz[baseline=-3pt]%
+	\protect\node[scale=.5, circle, shade, ball
+	color=blue]{\color{white}\Large\bf#1};}
+%opening
+\title{Proyecto de Simulaci\'on}
+\author{Karl Lewis Sosa Justiz}
+
+
+\begin{document}
+
+\begin{figure}
+	\maketitle
+	\hspace{3,5cm} \includegraphics[width=5cm]{images/índice.jpg} 
+\end{figure}
+
+
+\clearpage
+\tableofcontents
+\newpage
+
+\section{Orden del Problema}
+\subsection{Poblado en Evoluci\'on}
+Se dese conocer la evoluci\'on de la poblaci\'on de una determinada regi\'on.
+Se conoce que la probabilidad de fallecer de una persona distribuye uniforme
+y se corresponde, seg\'un su edad y sexo, con la siguiente tabla:
+
+\begin{table}[htbp]
+\begin{center}
+\begin{tabular}{c c c }
+
+Edad&Hombre&Mujer  \\
+0-12&0.25&0.25 		\\
+12-45& 0.1& 0.15  	\\
+45-76& 0.3& 0.35    \\
+76-125& 0.7& 0.65   \\
+\end{tabular}
+\end{center}
+\end{table}
+Del mismo modo, se conoce que la probabilidad de una mujer se embarace
+es uniforme y est\'a relacionada con la edad:
+\begin{table}[htbp]
+	\begin{center}
+		\begin{tabular}{c c }
+			
+			Edad&Probabilidad de Embarazarse \\
+			12-15 &0.2		\\
+			15-21 &0.45  	\\
+			21-35 &0.8   \\
+			35-45 &0.4  \\
+			45-60 &0.2  \\
+			60-125& 0.05  \\
+		\end{tabular}
+	\end{center}
+\end{table}
+
+Para que una mujer quede embarazada debe tener pareja y no haber tenido
+el n\'umero m\'aximo de hijos que deseaba tener ella o su pareja en ese momento.
+El n\'umero de hijos que cada persona desea tener distribuye uniforme seg\'un la
+tabla siguiente :
+
+
+\begin{table}[htbp]
+	\begin{center}
+		\begin{tabular}{c c }
+			
+			N\'umero&Probabilidad \\
+			1 &0.6		\\
+			2 &0.75  	\\
+			3&0.35   \\
+			4&0.2  \\
+			5 &0.1  \\
+			m\'as de 5& 0.05  \\
+		\end{tabular}
+	\end{center}
+\end{table}
+\newpage
+Para que dos personas sean pareja deben estar solas en ese instante y deben
+desear tener pareja. El desear tener pareja est\'a relacionado con la edad:
+\begin{table}[htbp]
+	\begin{center}
+		\begin{tabular}{c c }
+			
+			Edad&Probabilidad de Querer Pareja \\
+			12-15 &0.6		\\
+			15-21 &0.65  	\\
+			21-35&0.8   \\
+			35-45&0.6  \\
+			45-60 &0.5  \\
+			60-125& 0.2  \\
+		\end{tabular}
+	\end{center}
+\end{table}
+
+Si dos personas de diferente sexo est\'an solas y ambas desean querer tener
+parejas entonces la probabilidad de volverse pareja est\'a relacionada con la diferencia de edad:
+\begin{table}[htbp]
+	\begin{center}
+		\begin{tabular}{c c }
+			
+			Diferencia de Edad&Probabilidad de Establecer Pareja \\
+			0-5 &0.45		\\
+			5-10 &0.4 	\\
+			10-15&0.35   \\
+			15-20&0.25  \\
+			20 0 m\'as &0.15  \\
+		\end{tabular}
+	\end{center}
+\end{table}
+
+Cuando dos personas est\'an en pareja la probabilidad de que ocurra una ruptura distribuye uniforme y es de 0.2. Cuando una persona se separa, o enviuda,
+necesita estar sola p or un per\'iodo de tiempo que distribuye exponencial con un
+par\'ametro que est\'a relacionado con la edad:
+\begin{table}[htbp]
+	\begin{center}
+		\begin{tabular}{c c }
+			
+			Edad & $\lambda$ \\
+			12-15 & 3 meses		\\
+			15-21 & 6 meses 	\\
+			21-35&  6 meses  \\
+			35-45& 1 a\~nos  \\
+			45-60 &2 a\~nos  \\
+			60-125& 4 a\~nos
+		\end{tabular}
+	\end{center}
+\end{table}
+
+\newpage
+Cuando est\'an dadas todas las condiciones y una mujer queda embarazada
+puede tener o no un embarazo m\'ultiple y esto distribuye uniforme acorde a las
+probabilidades siguientes:
+\begin{table}[htbp]
+	\begin{center}
+		\begin{tabular}{c c }
+			
+			N\'umeros de Bebe & Probabilidad \\
+			1 & 0.7	\\
+			2 & 0.18 	\\
+			3&  0.08  \\
+			4& 0.04  \\
+			5&0.02  \\
+
+		\end{tabular}
+	\end{center}
+\end{table}
+
+La probabilidad del sexo de cada beb\'e nacido es uniforme 0,5.
+Asumiendo que se tiene una poblaci\'on inicial de M mujeres y H hombres y
+que cada poblador, en el instante incial, tiene una edad que distribuye uniforme
+(U(0,100)). Realice un pro ceso de simulaci\'on para determinar como evoluciona
+la poblaci\'on en un per\'io do de 100 a\~nos.
+
+\section{Principales Ideas seguidas para la soluci\'on del problema}
+
+\section{Modelo de Simulaci\'on de Eventos Discretos desarrollado para resolver el
+	problema}
+\section{Consideraciones obtenidas a partir de la ejecuci\'on de las simulaciones del
+	problema}
+\section{Enlace al repositorio del proyecto en Github}
+
+\end{document}

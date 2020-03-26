@@ -1,6 +1,7 @@
 import random
 import math
 import collections
+import matplotlib.pyplot as plt
 
 
 def roud_well(n):
@@ -23,6 +24,8 @@ class Person:
         self.single=True
         # time to wait after breking up
         self.mourning=0
+        #time left to give birth
+        self.birth_time=0
         while self.one_more_kid():
             pass
         
@@ -82,7 +85,7 @@ class Person:
                 period=i+1
                 break
 
-        return random.randint(max(age,table[period-1]*12),table[period]*12)
+        return random.randint(max(age+1,table[period-1]*12),table[period]*12)
 
     def set_mourning_time(self):
         t= random.random()
@@ -97,13 +100,15 @@ class Person:
             l=1/24
         else:
             l=1/48
-        self.mourning=roud_well(math.log(t,math.e))/-l
+        self.mourning=roud_well(math.log(t,math.e)/-l)
         
     def one_more_month(self):
         self.age+=1
         if self.age==12*12 or self.age==15*12 or self.age==21*12 or self.age==35*12 or self.age==45*12 or self.age==60*12:
             self.wtbiac=self.c_wtbiac(self.age)
         self.mourning= max(0 ,self.mourning-1)
+        self.birth_time= max(0 ,self.birth_time-1)
+
 class Population:
     def __init__(self,m,f,years=100):
         # 0 is male, 1 es female
@@ -116,18 +121,32 @@ class Population:
         self.noc=0
         # kids to be born
         self.kids=collections.deque()
+        # number of birth per year
+        self.nobpy=0
+        # list of number of birth per year
+        self.lnobpy=[]
+         # number of death per year
+        self.nodpy=0
+        # list of number of death per year
+        self.lnodpy=[]  
+        # list of number of men per year
+        self.nom=[]
+        # list of number of men per year
+        self.now=[]
 
     def remove_dead_people(self):
         i=0
         while(i<len(self.men)):
             if self.men[i].is_dead():
                 self.men.remove(self.men[i])
+                self.nodpy+=1
             else:
                 i+=1   
         i=0
         while(i<len(self.women)):
             if self.women[i].is_dead():
                 self.women.remove(self.women[i])
+                self.nodpy+=1
             else:
                 i+=1 
 
@@ -135,6 +154,8 @@ class Population:
         self.remove_dead_people()
         count=0
         while self.time!=0:
+            if count%12==0:
+                self.store_data()
             for i in self.men:
                 i.one_more_month()
             for i in self.women:
@@ -148,8 +169,6 @@ class Population:
             self.make_kids()
             self.remove_couples()
             self.make_couples()
-            if count%12==0:
-                print(len(self.men),len(self.women),len(self.couples),self.noc,len(self.kids))
             count+=1
             self.time-=1
 
@@ -219,40 +238,46 @@ class Population:
     def make_kids(self):
         
         for cp in self.couples:
-            if cp[3]==0 and (cp[0].want_kid() or cp[1].want_kid()):
+            if  (cp[0].want_kid() or cp[1].want_kid()) and cp[1].birth_time==0:
                 p=random.random()
                 if 12*12<=cp[1].age and cp[1].age<15*12 and cp[1].death_time-cp[1].age>9:
                     if p<0.2:
+                        cp[1].birth_time=9
                         cp[0].number_of_kids+=1
                         cp[1].number_of_kids+=1
                         self.kids.append([9,self.number_of_kids()])
                     continue
                 if  cp[1].age<21*12 and cp[1].death_time-cp[1].age>9:
                     if p<0.45:
+                        cp[1].birth_time=9
                         cp[0].number_of_kids+=1
                         cp[1].number_of_kids+=1
                         self.kids.append([9,self.number_of_kids()])
                     continue
                 if cp[1].age<35*12 and cp[1].death_time-cp[1].age>9:
                     if p<0.8:
+                        cp[1].birth_time=9
                         cp[0].number_of_kids+=1
                         cp[1].number_of_kids+=1
                         self.kids.append([9,self.number_of_kids()])
-
+                        continue
                 if cp[1].age<45*12 and cp[1].death_time-cp[1].age>9:
                     if p<0.4:
+                        cp[1].birth_time=9
                         cp[0].number_of_kids+=1
                         cp[1].number_of_kids+=1
                         self.kids.append([9,self.number_of_kids()])
                     continue                
                 if cp[1].age<60*12 and cp[1].death_time-cp[1].age>9:
                     if p<0.2:
+                        cp[1].birth_time=9
                         cp[0].number_of_kids+=1
                         cp[1].number_of_kids+=1
                         self.kids.append([9,self.number_of_kids()])
                     continue    
                 if  cp[1].age<125*12 and cp[1].death_time-cp[1].age>9:
                     if p<0.05:
+                        cp[1].birth_time=9
                         cp[0].number_of_kids+=1
                         cp[1].number_of_kids+=1
                         self.kids.append([9,self.number_of_kids()])
@@ -264,6 +289,29 @@ class Population:
         news=[Person(age=0) for _ in range(ac) ]
         self.men.extend([x for x in news if x.sex==0])
         self.women.extend([x for x in news if x.sex==1])
+        self.nobpy+=ac
+    def store_data(self):
+        self.lnobpy.append(self.nobpy)
+        self.nobpy=0
+        self.lnodpy.append(self.nodpy)
+        self.nodpy=0
+        self.nom.append(len(self.men))
+        self.now.append(len(self.women))
+    def showdata(self):
+        x=[i for i in range(len(self.lnobpy))]
+        plt.figure()
+        plt.subplot(311)
+        plt.plot(x,self.lnobpy)
+        
+        plt.subplot(312)
+        plt.plot(x,self.lnodpy)
+        
+        plt.subplot(313)
+        plt.plot(x,[self.now[i]+self.nom[i] for i in range(len(self.lnobpy))])
+        plt.show()
+        
 
-a=Population(200,500,200)
+a=Population(500,500,100)
 a.run()
+a.showdata()
+
