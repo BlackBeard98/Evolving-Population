@@ -18,9 +18,10 @@
 \usepackage{wrapfig}
 \usepackage[rflt]{floatflt}
 \usepackage{multicol}
-\usepackage{listings} \lstset {language = C++, basicstyle=\bfseries\ttfamily, keywordstyle = \color{blue}, commentstyle = \bf\color{green}}
+\usepackage{listings} \lstset {language = Python, basicstyle=\bfseries\ttfamily, keywordstyle = \color{blue}, commentstyle = \bf\color{gray}}
 \usepackage{tikz}
 \usepackage{enumitem}
+
 
 \newcommand
 *
@@ -129,7 +130,7 @@ parejas entonces la probabilidad de volverse pareja est\'a relacionada con la di
 			5-10 &0.4 	\\
 			10-15&0.35   \\
 			15-20&0.25  \\
-			20 0 m\'as &0.15  \\
+			20 o m\'as &0.15  \\
 		\end{tabular}
 	\end{center}
 \end{table}
@@ -160,7 +161,7 @@ probabilidades siguientes:
 	\begin{center}
 		\begin{tabular}{c c }
 			
-			N\'umeros de Bebe & Probabilidad \\
+			N\'umero de Beb\'es & Probabilidad \\
 			1 & 0.7	\\
 			2 & 0.18 	\\
 			3&  0.08  \\
@@ -178,11 +179,45 @@ que cada poblador, en el instante incial, tiene una edad que distribuye uniforme
 la poblaci\'on en un per\'io do de 100 a\~nos.
 
 \section{Principales Ideas seguidas para la soluci\'on del problema}
+\begin{itemize}
+	\item Se va a analizar el proceso con intervalos mensuales
+	\item Se tiene una clase Person que va se va actualizando cada mes seg\'un su estado 
+	\item Se tiene una clase Population que tiene el r\'ecord de todas las personas y maneja el estado de las parejas
+\end{itemize}
+\newpage
+\section{Modelo de Simulaci\'on de Eventos Discretos desarrollado para resolver el problema}
+\begin{lstlisting}
+	while time!=0:
+		#one_more_month lo que realmente hace
+		#es actualizar la edad, si quiere estar
+		#en pareja, el tiempo de luto y el
+		#tiempo de embarazo 
+		for i in men:
+			i.one_more_month()
+		for i in women:
+			i.one_more_month()
+		#Se elimina los muertos en ese periodo
+		remove_dead_people()
+		#Actualiza el tiempo que le resta a las parejas
+		update_couples()
+		#Actualiza el tiempo restante a los embarazos
+		update_kids()
+		#Agregar nuevos nacidos a la poblacion
+		give_birth()
+		#Por cada pareja que cumpla los requisitos 
+		#poner a la mujer a gestar
+		make_kids()
+		#Eliminar parejas que ya cumplieron su tiempo
+		remove_couples()
+		#Formar nuevas parejas segun las condiciones
+		make_couples()
+		#Paso de un mes
+		time-=1
 
-\section{Modelo de Simulaci\'on de Eventos Discretos desarrollado para resolver el
-	problema}
-\section{Consideraciones obtenidas a partir de la ejecuci\'on de las simulaciones del
-	problema}
+\end{lstlisting}
+\section{Consideraciones obtenidas a partir de la ejecuci\'on de las simulaciones del problema}
+Cuando se inicia la poblaci\'on una uniforme no es lo ideal para generar las edades ya que es asi como se comportan las edades en una poblaci\'on una distribuci\'on normal ser\'ia m\'as efectiva. Adem\'as al formar pareja no es factible comprobar cada par de personas y ver si cumplen las condiciones ya que para poblaciones del orden de $10^{5}$ este proceso al ser de orden cuadr\'atico hace imposible su calculo, en cambio asignarle a cada mujer una pareja (d\'andole  m\'as opotunidades a los que tienen edades cercanas que son los que m\'as posibilidades tienen) permitir\'ia analizar mayor cantidad de personas.
+Por otra parte el en tiempo de luto el $\lambda$ fue tomado como valor esperado (1/$\lambda$) ya que est\'a dado en meses y tiene m\'as sentido. En el transcurso de 100 a\~nos las poblaciones crecen lo que todav\'ia no se puede ver el boom del crecimiento exponencial ya que solo hay 5 o 6 generaciones a lo sumo.
 \section{Enlace al repositorio del proyecto en Github}
 
 \end{document}
